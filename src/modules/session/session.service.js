@@ -1,9 +1,12 @@
 import {Session} from "../../database/model/session.model.js";
-
+import {sessionSchema} from "./session.validation.js";
 
 export const createSession = async (req , res) => {
     const { courseId } = req.params;
     const {title,order,filePath,duration} = req.body;
+    sessionSchema.validateAsync(req.body).catch(err => {
+        return res.status(400).json({message:err.details[0].message});
+    });
     const createdSession = await Session.create({title,order,courseId,filePath,duration});
     if(!createdSession) return res.status(500).json({message:"Can't create this session ,something went wrong!!"});
     res.status(201).json({message:"session created successfully",data:createdSession});
@@ -26,6 +29,9 @@ export const getSessionById = async (req , res) => {
 export const updateSession = async (req , res) => {
     const { sessionId } = req.params;
     const {title,order,filePath,duration} = req.body;
+        sessionSchema.validateAsync(req.body).catch(err => {
+        return res.status(400).json({message:err.details[0].message});
+    });
     const updatedSession = await Session.findByIdAndUpdate(sessionId, {title,order,filePath,duration}, { new: true });
     if(!updatedSession) return res.status(404).json({message:"No session found with this id!!"});
     res.status(200).json({message:"success",data:updatedSession});

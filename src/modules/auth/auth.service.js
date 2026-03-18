@@ -1,4 +1,5 @@
 import { User } from "../../database/model/user.model.js";
+import { userSchema } from "./auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -7,6 +8,9 @@ export const register = async (req, res) => {
     const user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: "User email already exsist" });
     const hashedPassword = await bcrypt.hash(password, 10);
+    userSchema.validateAsync(req.body).catch(err => {
+        return res.status(400).json({message:err.details[0].message});
+    });
     const createdUser = await User.create({ name, email, password: hashedPassword, role});
     if (!createdUser) return res.status(500).json({ message: "Can't Add this user ,something went wrong !!" })
     res.status(201).json({ message: "user created successfully", createdUser })

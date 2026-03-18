@@ -1,8 +1,12 @@
 import { Course } from "../../database/model/course.model.js";
-
+import { courseSchema } from "./course.validation.js";
 
 export const createCourse = async (req, res) => {
     const { title, description, price, category, thumbnail } = req.body;
+    courseSchema.validateAsync(req.body).catch(err => {
+        return res.status(400).json({message:err.details[0].message});
+    });
+
     const course = await Course.create({ title, description, price, category, thumbnail });
     course ? res.status(201).json({ message: "success", data: course }) :
         res.status(500).json({ message: "something went wrong !!" });
@@ -36,6 +40,10 @@ export const editCourse = async (req, res) => {
         const title = await Course.findOne({ title: updatedFilelds.title })
         if (title) { return res.status(400).json({ message: "Title is exsist" }) }
     }
+    courseSchema.validateAsync(updatedFilelds).catch(err => {
+        return res.status(400).json({message:err.details[0].message});
+    });
+
     const updatedCourse = await Course.findByIdAndUpdate(courseId, updatedFilelds, { returnDocument: "after" });
     res.status(200).json({ message: "success", data: updatedCourse })
 }

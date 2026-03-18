@@ -1,9 +1,13 @@
 import { Question } from './../../database/model/question.model.js';
+import { questionSchema } from './question.validation.js';
 
 
 export const createQuestion = async (req , res) => {
     const { sessionId } = req.params;
     const {text,options,correctAnswerIndex} = req.body;
+    questionSchema.validateAsync(req.body).catch(err => {
+        return res.status(400).json({message:err.details[0].message});
+    });
     const createdQuestion = await Question.create({text,options,correctAnswerIndex,sessionId});
     if(!createdQuestion) return res.status(500).json({message:"Can't create this question ,something went wrong!!"});
     res.status(201).json({message:"question created successfully",data:createdQuestion});
@@ -19,6 +23,10 @@ export const getAllQuestions = async (req , res) => {
 export const updateQuestion = async (req , res) => {
     const { questionId } = req.params;
     const {text,options,correctAnswerIndex} = req.body;
+        questionSchema.validateAsync(req.body).catch(err => {
+        return res.status(400).json({message:err.details[0].message});
+    });
+
     const updatedQuestion = await Question.findByIdAndUpdate(questionId, {text,options,correctAnswerIndex}, { new: true });
     if(!updatedQuestion) return res.status(404).json({message:"No question found with this id!!"});
     res.status(200).json({message:"success",data:updatedQuestion});
